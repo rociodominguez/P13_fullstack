@@ -16,14 +16,18 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
-    minlength: 6
+    required: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  annualGoal: { 
+    type: Number, 
+    default: 0 
+  },
+  booksRead: { 
+    type: Number, 
+    default: 0 
+  } 
 });
+
 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password') || this.isNew) {

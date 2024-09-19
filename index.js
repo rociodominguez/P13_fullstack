@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/api/users', userRouter);
-app.use('/api/books', bookRouter)
+app.use('/api/books', bookRouter);
 
 app.use("*", (req, res, next) => {
     return res.status(404).json("Sorry! Route not found 💔");

@@ -62,8 +62,28 @@ const loginUser = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    res.json({
+      name: user.name,
+      email: user.email,
+      annualGoal: user.annualGoal,
+      booksRead: user.booksRead,
+    });
+  } catch (error) {
+    console.error('Error al obtener información del usuario:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+};
 
 module.exports = {
   registerUser,
-  loginUser
+  loginUser,
+  getUser
 };
