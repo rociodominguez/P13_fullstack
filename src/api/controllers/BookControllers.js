@@ -96,11 +96,37 @@ const deleteBook = async (req, res) => {
   }
 };
 
+const addBook = async (req, res) => {
+  const { title, author, status } = req.body;
+
+  try {
+    // Verificar que todos los campos necesarios estén presentes
+    if (!title || !author || !status) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Crear un nuevo libro
+    const newBook = new Book({
+      title,
+      author,
+      status,
+      user: req.user._id, // Asumiendo que se usa el middleware de autenticación para agregar el ID del usuario
+    });
+
+    const savedBook = await newBook.save();
+    res.status(201).json(savedBook);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add book' });
+  }
+};
+
+
+
 module.exports = {
   getAllBooks,
   getBookById,
   createBook,
   updateBook,
-  deleteBook
-  
+  deleteBook,
+  addBook  
 };

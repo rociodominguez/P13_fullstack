@@ -18,14 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  annualGoal: { 
-    type: Number, 
-    default: 0 
-  },
-  booksRead: { 
-    type: Number, 
-    default: 0 
-  } 
+  readingGoal: { type: Number, default: 0 }
 });
 
 
