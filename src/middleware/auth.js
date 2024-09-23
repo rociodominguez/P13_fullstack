@@ -2,7 +2,6 @@ const User = require("../api/models/UserModel");
 const jwt = require('jsonwebtoken');
 
 const isAuth = async (req, res, next) => {
-  // Extraer el token del encabezado Authorization
   const token = req.headers.authorization?.split(' ')[1];
   
   if (!token) {
@@ -10,17 +9,14 @@ const isAuth = async (req, res, next) => {
   }
   
   try {
-    // Verificar el token
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Buscar el usuario en la base de datos
     const user = await User.findById(decodedToken.id);
 
     if (!user) {
       return res.status(401).json({ error: 'Usuario no encontrado' });
     }
 
-    // Agregar el usuario a la solicitud
     req.user = {  
       _id: user._id
     };

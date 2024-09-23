@@ -73,8 +73,7 @@ const getUser = async (req, res) => {
     res.json({
       name: user.name,
       email: user.email,
-      annualGoal: user.annualGoal,
-      booksRead: user.booksRead,
+      readingGoal: user.readingGoal
     });
   } catch (error) {
     console.error('Error al obtener información del usuario:', error);
@@ -82,21 +81,22 @@ const getUser = async (req, res) => {
   }
 };
 
+
 const updateReadingGoal = async (req, res) => {
   const { readingGoal } = req.body;
-  const userId = req.user._id;
 
   if (readingGoal < 0) {
-    return res.status(400).json({ message: 'Reading goal must be a positive number' });
+    return res.status(400).json({ message: "Reading goal must be a positive number." });
   }
 
   try {
-    const user = await User.findByIdAndUpdate(userId, { readingGoal }, { new: true });
-    res.status(200).json(user);
+    const user = await User.findByIdAndUpdate(req.user._id, { readingGoal }, { new: true });
+    res.json(user); 
   } catch (error) {
-    res.status(500).json({ message: 'Error updating reading goal', error });
+    res.status(500).json({ message: "Error updating reading goal." });
   }
 };
+
 
 module.exports = {
   registerUser,

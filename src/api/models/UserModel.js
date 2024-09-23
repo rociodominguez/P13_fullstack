@@ -4,23 +4,26 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   email: {
     type: String,
     required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
+    unique: true
   },
   password: {
     type: String,
     required: true
   },
-  readingGoal: { type: Number, default: 0 }
+  readingGoal: {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
-
 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password') || this.isNew) {
