@@ -61,7 +61,9 @@ const loginUser = async (req, res) => {
     const token = generateToken(user);
     res.status(200).json({
       token,
-      userId: user._id
+      userId: user._id,
+      name: user.name,
+      readingGoal: user.readingGoal 
     });
   } catch (error) {
     console.error('Error al iniciar sesión:', error);
@@ -101,10 +103,6 @@ const getUserBooks = async (req, res) => {
 const updateReadingGoal = async (req, res) => {
   const { readingGoal } = req.body;
 
-  if (readingGoal < 0) {
-    return res.status(400).json({ message: "El objetivo de lectura debe ser un número positivo." });
-  }
-
   try {
     const user = await User.findByIdAndUpdate(req.user._id, { readingGoal }, { new: true });
     res.json(user);
@@ -112,6 +110,8 @@ const updateReadingGoal = async (req, res) => {
     res.status(500).json({ message: "Error al actualizar el objetivo de lectura." });
   }
 };
+
+
 
 
 module.exports = {
