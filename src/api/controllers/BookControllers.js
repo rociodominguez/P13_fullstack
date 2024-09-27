@@ -2,7 +2,7 @@ const Book = require('../models/BookModel');
 
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find();
+    const books = await Book.find({ user: req.user._id }); 
     res.status(200).json(books);
   } catch (error) {
     console.error('Error al obtener libros:', error);
@@ -25,18 +25,13 @@ const getBookById = async (req, res) => {
 };
 
 const createBook = async (req, res) => {
+  const { title, author, category, year, pages, status } = req.body;
+
+  if (!title || !author || !status) {
+    return res.status(400).json({ error: 'Todos los campos requeridos deben ser completados.' });
+  }
+
   try {
-    const { title, author, category, year, pages, status } = req.body;
-
-    // El user viene del middleware de autenticación
-    const userId = req.user?._id; 
-
-    // Validar campos requeridos
-    if (!title || !author || !status || !userId) {
-      return res.status(400).json({ error: 'Todos los campos requeridos deben ser completados' });
-    }
-
-    // Crear el nuevo libro asociado al usuario autenticado
     const newBook = new Book({
       title,
       author,
@@ -44,10 +39,9 @@ const createBook = async (req, res) => {
       year,
       pages,
       status,
-      user: userId  // Asocia el libro al ID del usuario autenticado
+      user: req.user._id 
     });
 
-    // Guardar el libro en la base de datos
     await newBook.save();
     res.status(201).json(newBook);
   } catch (error) {
@@ -62,33 +56,42 @@ const updateBook = async (req, res) => {
     const { status } = req.body;
 
     if (!status) {
-      return res.status(400).json({ error: 'Status is required' });
+      return res.status(400).json({ error: 'El estado del libro es obligatorio' });
     }
 
-    const updatedBook = await Book.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true } // Devuelve el documento actualizado
-    );
+    const book = await Book.findById(id);
 
-    if (!updatedBook) {
-      return res.status(404).json({ error: 'Book not found' });
+    if (!book) {
+      return res.status(404).json({ error: 'Libro no encontrado' });
     }
+
+    if (book.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'No tienes permiso para actualizar este libro' });
+    }
+
+    book.status = status;
+    const updatedBook = await book.save();
 
     res.json(updatedBook);
   } catch (error) {
-    console.error('Error updating book:', error);
-    res.status(500).json({ error: 'Error updating book' });
+    console.error('Error al actualizar el libro:', error);
+    res.status(500).json({ error: 'Error al actualizar el libro' });
   }
 };
 
 const deleteBook = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedBook = await Book.findByIdAndDelete(id);
-    if (!deletedBook) {
+    const book = await Book.findById(id);
+    if (!book) {
       return res.status(404).json({ error: 'Libro no encontrado' });
     }
+
+    if (book.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'No tienes permiso para eliminar este libro' });
+    }
+
+    await book.deleteOne();
     res.status(200).json({ message: 'Libro eliminado exitosamente' });
   } catch (error) {
     console.error('Error al eliminar el libro:', error);
@@ -100,17 +103,15 @@ const addBook = async (req, res) => {
   const { title, author, status } = req.body;
 
   try {
-    // Verificar que todos los campos necesarios estén presentes
     if (!title || !author || !status) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Crear un nuevo libro
     const newBook = new Book({
       title,
       author,
       status,
-      user: req.user._id, // Asumiendo que se usa el middleware de autenticación para agregar el ID del usuario
+      user: req.user._id, 
     });
 
     const savedBook = await newBook.save();
@@ -119,8 +120,6 @@ const addBook = async (req, res) => {
     res.status(500).json({ error: 'Failed to add book' });
   }
 };
-
-
 
 module.exports = {
   getAllBooks,

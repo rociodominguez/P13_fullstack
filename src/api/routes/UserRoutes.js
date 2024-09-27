@@ -10,5 +10,4 @@ userRouter.get('/me', isAuth, getUser);
 userRouter.put('/update-reading-goal', isAuth, updateReadingGoal);
 
 
-
 module.exports = userRouter;

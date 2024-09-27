@@ -10,6 +10,10 @@ const registerUser = async (req, res, next) => {
       return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+    }
+
     const existingUser = await User.findOne({ name });
     if (existingUser) {
       return res.status(409).json({ error: 'El nombre de usuario ya está en uso' });
@@ -24,6 +28,9 @@ const registerUser = async (req, res, next) => {
       email,
       password
     });
+
+    const salt = await bcrypt.genSalt(10);
+    newUser.password = await bcrypt.hash(password, salt);
 
     await newUser.save();
 
@@ -81,19 +88,28 @@ const getUser = async (req, res) => {
   }
 };
 
+const getUserBooks = async (req, res) => {
+  try {
+    const books = await Book.find({ user: req.user._id }); 
+    res.json(books);
+  } catch (error) {
+    console.error('Error al obtener los libros del usuario:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+};
 
 const updateReadingGoal = async (req, res) => {
   const { readingGoal } = req.body;
 
   if (readingGoal < 0) {
-    return res.status(400).json({ message: "Reading goal must be a positive number." });
+    return res.status(400).json({ message: "El objetivo de lectura debe ser un número positivo." });
   }
 
   try {
     const user = await User.findByIdAndUpdate(req.user._id, { readingGoal }, { new: true });
-    res.json(user); 
+    res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Error updating reading goal." });
+    res.status(500).json({ message: "Error al actualizar el objetivo de lectura." });
   }
 };
 
@@ -102,5 +118,6 @@ module.exports = {
   registerUser,
   loginUser,
   getUser,
-  updateReadingGoal
+  updateReadingGoal,
+  getUserBooks
 };
